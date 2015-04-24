@@ -21,7 +21,7 @@ class RequestHandler(object):
 
     @property
     def connection_timeout(self):
-        if not getattr(self, '_connection_timeout'):
+        if not getattr(self, '_connection_timeout', False):
             self._connection_timeout = 5  # socket default value
         return self._connection_timeout
 
