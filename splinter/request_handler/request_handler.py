@@ -19,6 +19,18 @@ else:
 
 class RequestHandler(object):
 
+    @property
+    def connection_timeout(self):
+        if not getattr(self, '_connection_timeout'):
+            self._connection_timeout = 5  # socket default value
+        return self._connection_timeout
+
+    @connection_timeout.setter
+    def connection_timeout(self, value):
+        if value < 0:
+            raise ValueError('Timeout value out of range')
+        self._connection_timeout = value
+
     def connect(self, url):
         if not (url.startswith("file:") or url.startswith("about:")):
             self.request_url = url
@@ -45,9 +57,11 @@ class RequestHandler(object):
     def _create_connection(self):
         self._parse_url()
         if self.scheme == 'https':
-            self.conn = http_client.HTTPSConnection(self.host, self.port)
+            self.conn = http_client.HTTPSConnection(
+                self.host, self.port, timeout=self.connection_timeout)
         else:
-            self.conn = http_client.HTTPConnection(self.host, self.port)
+            self.conn = http_client.HTTPConnection(
+                self.host, self.port, timeout=self.connection_timeout)
         self.conn.putrequest('GET', self.path)
         self.conn.putheader('User-agent', 'python/splinter')
         if self.auth:
